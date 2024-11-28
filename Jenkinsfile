@@ -9,7 +9,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 echo 'Clonando o repositório...'
-                git 'https://github.com/Hemex001/Trabalho_DevOps_-1505031-.git'  // URL do repositório
+                checkout scm
             }
         }
 
