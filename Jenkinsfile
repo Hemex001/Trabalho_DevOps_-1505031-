@@ -13,14 +13,15 @@ pipeline {
             }
         }
 
-         stage('Install Dependencies') {
-            steps {
-                echo 'Instalando dependências...'
-                sh '''
-                pip3 install -r requirements.txt
-                '''
-            }
-        }
+        stage('Setup Environment') {
+        steps {
+            sh '''
+               source venv/bin/activate
+               pip install -r requirements.txt
+               '''
+    	    }
+	}
+
 	
 	stage('Run Tests') {
             steps {
