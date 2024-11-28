@@ -13,7 +13,16 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+         stage('Install Dependencies') {
+            steps {
+                echo 'Instalando dependências...'
+                sh '''
+                pip3 install -r requirements.txt
+                '''
+            }
+        }
+	
+	stage('Run Tests') {
             steps {
                 echo 'Executando testes...'
                 sh 'python3 -m unittest discover -s . -p "test_*.py"'
