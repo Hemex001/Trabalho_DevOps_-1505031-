@@ -1,9 +1,12 @@
+# docker-compose.yml
+version: '3.9'
+
 services:
   mariadb:
-    container_name: ${COMPOSE_PROJECT_NAME}_mariadb
     build:
       context: .
       dockerfile: Dockerfile_mariadb
+    container_name: mariadb_container
     ports:
       - "3306:3306"
     volumes:
@@ -13,80 +16,42 @@ services:
       MYSQL_DATABASE: school_db
       MYSQL_USER: flask_user
       MYSQL_PASSWORD: flask_password
-    networks:
-      - app-network
 
   flask_app:
-    container_name: ${COMPOSE_PROJECT_NAME}_flask_app
     build:
       context: .
       dockerfile: Dockerfile_flask
+    container_name: flask_app_container
     ports:
       - "5000:5000"
     depends_on:
       - mariadb
     environment:
-      FLASK_APP: app.py
+      FLASK_APP: app
       FLASK_ENV: development
-    networks:
-      - app-network
-
-  flask-tests:
-    container_name: ${COMPOSE_PROJECT_NAME}_flask_tests
-    build:
-      context: .
-      dockerfile: Dockerfile_flask
-    command: ["python", "-m", "unittest", "test_app.py"]
-    depends_on:
-      - mariadb
-    networks:
-      - app-network
+      FLASK_DB_HOST: mariadb
+      FLASK_DB_USER: flask_user
+      FLASK_DB_PASSWORD: flask_password
+      FLASK_DB_NAME: school_db
 
   prometheus:
-    container_name: ${COMPOSE_PROJECT_NAME}_prometheus
     image: prom/prometheus:latest
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro # Certifique-se de que o arquivo existe no host
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
     depends_on:
       - flask_app
-    networks:
-      - app-network
 
   grafana:
-    container_name: ${COMPOSE_PROJECT_NAME}_grafana
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
-    depends_on:
-      - prometheus
-    networks:
-      - app-network
     volumes:
       - grafana_data:/var/lib/grafana
-
-  jenkins:
-    container_name: ${COMPOSE_PROJECT_NAME}_jenkins
-    build:
-      context: .
-      dockerfile: Dockerfile_jenkins
-    ports:
-      - "8081:8080"
-      - "50001:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-    user: root
-    restart: unless-stopped
-    networks:
-      - app-network
+    depends_on:
+      - prometheus
 
 volumes:
   db_data:
   grafana_data:
-  jenkins_home:
-
-networks:
-  app-network:
-    driver: bridge
