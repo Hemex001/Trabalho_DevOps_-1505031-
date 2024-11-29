@@ -14,6 +14,16 @@ services:
       MYSQL_USER: flask_user
       MYSQL_PASSWORD: flask_password
 
+  mariadb-exporter:
+    image: prom/mysqld-exporter:latest
+    container_name: mariadb_exporter
+    environment:
+      - DATA_SOURCE_NAME=root:root_password@(mariadb:3306)/school_db
+    ports:
+      - "9104:9104"
+    depends_on:
+      - mariadb
+
   flask_app:
     build:
       context: .
@@ -33,12 +43,14 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
-      - "9091:9090"
+      - "9090:9090"
     depends_on:
       - flask_app
+      - mariadb-exporter
 
   grafana:
     image: grafana/grafana:latest
@@ -50,15 +62,6 @@ services:
     depends_on:
       - prometheus
 
-  mysqld-exporter:
-    image: prom/mysqld-exporter:latest
-    container_name: mysqld_exporter
-    environment:
-      - DATA_SOURCE_NAME=root:root_password@(mariadb:3306)/school_db
-    ports:
-      - "9104:9104"
-    depends_on:
-      - mariadb
 
 volumes:
   db_data:
