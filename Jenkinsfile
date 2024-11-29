@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_NAME = "trabalho_devops_app"
+        COMPOSE_PROJECT_NAME = "pipeline2"
     }
 
     stages {

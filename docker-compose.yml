@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile_mariadb
-    container_name: mariadb_container
+    container_name: ${COMPOSE_PROJECT_NAME}_mariadb_container
     ports:
       - "3306:3306"
     volumes:
