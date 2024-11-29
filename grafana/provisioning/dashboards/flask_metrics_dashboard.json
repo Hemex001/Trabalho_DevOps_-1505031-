@@ -1,0 +1,26 @@
+{
+    "title": "Flask Application Metrics",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "HTTP Requests",
+        "targets": [
+          {
+            "expr": "flask_http_requests_total",
+            "legendFormat": "{{method}} {{status}}"
+          }
+        ]
+      },
+      {
+        "type": "graph",
+        "title": "Request Duration",
+        "targets": [
+          {
+            "expr": "flask_http_request_duration_seconds_sum / flask_http_request_duration_seconds_count",
+            "legendFormat": "Duration"
+          }
+        ]
+      }
+    ]
+  }
+  
