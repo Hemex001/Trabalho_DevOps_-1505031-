@@ -4,7 +4,6 @@ from flask_appbuilder import AppBuilder, SQLA
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder import ModelView
 from prometheus_flask_exporter import PrometheusMetrics
-from sqlalchemy.exc import OperationalError
 import os
 import time
 import logging
@@ -12,8 +11,9 @@ import logging
 # Inicializar o Flask
 app = Flask(__name__)
 
-# Configurar o Prometheus Metrics
+# Configurar Prometheus Metrics
 metrics = PrometheusMetrics(app)
+metrics.info("app_info", "Aplicação Flask para monitoramento", version="1.0.0")
 
 # Configuração do Flask
 app.config['SECRET_KEY'] = 'minha_chave_secreta_super_secreta'
@@ -31,33 +31,7 @@ appbuilder = AppBuilder(app, db.session)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Configuração do Banco de Dados
-if os.getenv('FLASK_ENV') != 'testing':
-    attempts = 5
-    for i in range(attempts):
-        try:
-            with app.app_context():
-                db.create_all()
-                if not appbuilder.sm.find_user(username='admin'):
-                    appbuilder.sm.add_user(
-                        username='admin',
-                        first_name='Admin',
-                        last_name='User',
-                        email='admin@admin.com',
-                        role=appbuilder.sm.find_role(appbuilder.sm.auth_role_admin),
-                        password='admin'
-                    )
-            logger.info("Banco de dados inicializado com sucesso.")
-            break
-        except OperationalError:
-            if i < attempts - 1:
-                logger.warning("Tentativa de conexão com o banco de dados falhou. Tentando novamente...")
-                time.sleep(5)
-            else:
-                logger.error("Não foi possível conectar ao banco de dados após várias tentativas.")
-                raise
-
-# Definir modelo
+# Modelo Aluno
 class Aluno(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(50), nullable=False)
@@ -91,6 +65,10 @@ def adicionar_aluno():
     logger.info(f"Aluno {data['nome']} {data['ra']} adicionado com sucesso!")
     return jsonify({'message': 'Aluno adicionado com sucesso!'}), 201
 
+# Rota inicial
+@app.route("/")
+def index():
+    return "Aplicação Flask rodando com métricas no endpoint /metrics"
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
