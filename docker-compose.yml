@@ -1,9 +1,9 @@
 services:
   mariadb:
+    container_name: ${COMPOSE_PROJECT_NAME}_mariadb
     build:
       context: .
       dockerfile: Dockerfile_mariadb
-    container_name: ${COMPOSE_PROJECT_NAME}_mariadb_container
     ports:
       - "3306:3306"
     volumes:
@@ -17,36 +17,33 @@ services:
       - app-network
 
   flask_app:
+    container_name: ${COMPOSE_PROJECT_NAME}_flask_app
     build:
       context: .
       dockerfile: Dockerfile_flask
-    container_name: flask_app_container
     ports:
       - "5000:5000"
     depends_on:
       - mariadb
     environment:
-      FLASK_APP: app
+      FLASK_APP: app.py
       FLASK_ENV: development
-      FLASK_DB_HOST: mariadb
-      FLASK_DB_USER: flask_user
-      FLASK_DB_PASSWORD: flask_password
-      FLASK_DB_NAME: school_db
     networks:
       - app-network
 
   flask-tests:
+    container_name: ${COMPOSE_PROJECT_NAME}_flask_tests
     build:
       context: .
       dockerfile: Dockerfile_flask
-    container_name: flask_tests_container
+    command: ["python", "-m", "unittest", "test_app.py"]
     depends_on:
       - mariadb
-    command: ["python", "-m", "unittest", "test_app.py"]
     networks:
       - app-network
 
   prometheus:
+    container_name: ${COMPOSE_PROJECT_NAME}_prometheus
     image: prom/prometheus:latest
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
@@ -58,33 +55,33 @@ services:
       - app-network
 
   grafana:
+    container_name: ${COMPOSE_PROJECT_NAME}_grafana
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
     networks:
       - app-network
+    volumes:
+      - grafana_data:/var/lib/grafana
 
   jenkins:
+    container_name: ${COMPOSE_PROJECT_NAME}_jenkins
     build:
       context: .
       dockerfile: Dockerfile_jenkins
-    container_name: jenkins_container
     ports:
       - "8080:8080"
       - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/local/bin/docker:/usr/bin/docker
     user: root
     restart: unless-stopped
     networks:
       - app-network
-      
+
 volumes:
   db_data:
   grafana_data:
