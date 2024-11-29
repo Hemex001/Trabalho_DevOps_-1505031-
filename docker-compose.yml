@@ -42,17 +42,17 @@ services:
     networks:
       - app-network
 
-  prometheus:
-    container_name: ${COMPOSE_PROJECT_NAME}_prometheus
-    image: prom/prometheus:latest
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9091:9090"
-    depends_on:
-      - flask_app
-    networks:
-      - app-network
+prometheus:
+  container_name: ${COMPOSE_PROJECT_NAME}_prometheus
+  image: prom/prometheus:latest
+  volumes:
+    - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro # Mapeia o arquivo corretamente
+  ports:
+    - "9090:9090"
+  depends_on:
+    - flask_app
+  networks:
+    - app-network
 
   grafana:
     container_name: ${COMPOSE_PROJECT_NAME}_grafana
