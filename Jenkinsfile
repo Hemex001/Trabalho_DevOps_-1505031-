@@ -2,54 +2,64 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = "trabalho_devops_app"
+        DOCKER_IMAGE_NAME = "flask_app"
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Clone Repositório') {
             steps {
-                echo 'Clonando o repositório...'
+                echo 'Clonando o código do repositório...'
                 checkout scm
             }
         }
-	}
 
-	
-	stage('Run Tests') {
+        stage('Rodar Testes') {
             steps {
-                echo 'Executando testes...'
-                sh 'python3 -m unittest discover -s . -p "test_*.py"'
+                echo 'Executando testes da aplicação...'
+                sh '''
+                    docker-compose down
+                    docker-compose up flask-tests --build --abort-on-container-exit
+                '''
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Imagens Docker') {
             steps {
-                echo 'Construindo imagens Docker...'
-                sh 'docker-compose build'
+                echo 'Criando imagens Docker...'
+                sh '''
+                    docker-compose build
+                '''
             }
         }
 
-        stage('Deploy Application') {
+        stage('Deploy') {
             steps {
-                echo 'Subindo os serviços Docker...'
-                sh 'docker-compose up -d'
+                echo 'Subindo o ambiente...'
+                sh '''
+                    docker-compose up -d
+                '''
             }
         }
 
-        stage('Verify Monitoring') {
+        stage('Verificar Monitoramento') {
             steps {
-                echo 'Verificando monitoramento...'
-                sh 'curl -s http://localhost:9090 | grep Prometheus || exit 1'
+                echo 'Verificando se Prometheus está ativo...'
+                sh '''
+                    curl -f http://localhost:9090 || exit 1
+                '''
             }
         }
     }
 
     post {
+        always {
+            echo 'Pipeline finalizada.'
+        }
         success {
-            echo 'Pipeline executada com sucesso!'
+            echo 'Pipeline concluída com sucesso!'
         }
         failure {
-            echo 'A pipeline falhou!'
+            echo 'Pipeline falhou.'
         }
     }
 }
