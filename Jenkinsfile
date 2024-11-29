@@ -22,9 +22,15 @@ pipeline {
         stage('Rodar Testes') {
             steps {
                 sh '''
+                echo "Criando ambiente virtual..."
                 python3 -m venv venv
+                echo "Ativando ambiente virtual..."
                 . venv/bin/activate
-                python -m unittest discover -s . -p "test_*.py"
+                echo "Instalando dependências..."
+                pip install -r requirements.txt
+                echo "Executando testes..."
+                FLASK_ENV=testing python -m unittest discover -s . -p "test_*.py"
+                echo "Testes concluídos!"
                 '''
             }
         }
@@ -38,8 +44,14 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                // Subindo os serviços Docker
-                sh 'docker-compose -f docker-compose.yml up -d'
+                sh '''
+                echo "Parando e removendo containers existentes..."
+                docker-compose -f docker-compose.yml down || true
+                echo "Removendo containers conflitantes..."
+                docker rm -f flask_app_container mariadb_container || true
+                echo "Subindo novos containers..."
+                docker-compose -f docker-compose.yml up -d
+                '''
             }
         }
 
