@@ -2,12 +2,13 @@ FROM jenkins/jenkins:lts
 
 USER root
 
-# Instalar Docker Compose
+# Instalar o Docker Compose
 RUN apt-get update && apt-get install -y curl \
     && curl -L "https://github.com/docker/compose/releases/download/v2.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/bin/docker-compose \
     && chmod +x /usr/bin/docker-compose
 
-# Garantir permissões do Docker
-RUN usermod -aG docker jenkins
+# Criar o grupo 'docker' e adicionar o usuário 'jenkins' ao grupo
+RUN groupadd docker \
+    && usermod -aG docker jenkins
 
 USER jenkins
