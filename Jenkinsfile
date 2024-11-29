@@ -1,22 +1,65 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE_NAME = "trabalho_devops_app"
+    }
+
     stages {
-        stage('Clonar Repositório') {
+        stage('Clone Repositório') {
             steps {
-                echo 'Clonando o repositório...'
-                checkout([$class: 'GitSCM',
-                    branches: [[name: '*/main']],
-                    userRemoteConfigs: [[url: 'https://github.com/Hemex001/Trabalho_DevOps_-1505031-.git']]
-                ])
+                echo 'Clonando o código do repositório...'
+                checkout scm
             }
         }
 
-        stage('Construir') {
+        stage('Rodar Testes') {
             steps {
-                echo 'Construindo o projeto...'
-                sh 'echo "Simulação de build"'
+                echo 'Executando testes da aplicação...'
+                sh '''
+                    docker-compose down
+                    docker-compose up flask-tests --build --abort-on-container-exit
+                '''
             }
+        }
+
+        stage('Build Imagens Docker') {
+            steps {
+                echo 'Criando imagens Docker...'
+                sh '''
+                    docker-compose build
+                '''
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Subindo o ambiente...'
+                sh '''
+                    docker-compose up -d
+                '''
+            }
+        }
+
+        stage('Verificar Monitoramento') {
+            steps {
+                echo 'Verificando se Prometheus está ativo...'
+                sh '''
+                    curl -f http://localhost:9090 || exit 1
+                '''
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finalizada.'
+        }
+        success {
+            echo 'Pipeline concluída com sucesso!'
+        }
+        failure {
+            echo 'Pipeline falhou.'
         }
     }
 }
