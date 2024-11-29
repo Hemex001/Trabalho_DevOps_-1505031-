@@ -26,7 +26,8 @@ pipeline {
             steps {
                 echo 'Subindo o ambiente...'
                 sh '''
-                    docker-compose up -d --no-recreate
+                    docker-compose down || true
+                    docker-compose up -d --build
                 '''
             }
         }
