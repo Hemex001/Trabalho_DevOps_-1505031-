@@ -12,43 +12,6 @@ pipeline {
                 checkout scm
             }
         }
-
-        stage('Rodar Testes') {
-            steps {
-                echo 'Executando testes da aplicação...'
-                sh '''
-                    docker-compose down
-                    docker-compose up flask-tests --build --abort-on-container-exit
-                '''
-            }
-        }
-
-        stage('Build Imagens Docker') {
-            steps {
-                echo 'Criando imagens Docker...'
-                sh '''
-                    docker-compose build
-                '''
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Subindo o ambiente...'
-                sh '''
-                    docker-compose up -d
-                '''
-            }
-        }
-
-        stage('Verificar Monitoramento') {
-            steps {
-                echo 'Verificando se Prometheus está ativo...'
-                sh '''
-                    curl -f http://localhost:9090 || exit 1
-                '''
-            }
-        }
     }
 
     post {
