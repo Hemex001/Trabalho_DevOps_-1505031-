@@ -1,11 +1,22 @@
+# prometheus.yml
 global:
-  scrape_interval: 15s  # Intervalo para coletar métricas de todos os targets
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
 
 scrape_configs:
+  # Métricas da aplicação Flask
   - job_name: 'flask_app'
     static_configs:
-      - targets: ['flask_app_container:5000']  # Nome do serviço Flask no Docker Compose
+      - targets: ['flask_app:5000']
+    metrics_path: '/metrics'
 
+  # Métricas do MariaDB via mysqld-exporter
   - job_name: 'mariadb'
     static_configs:
-      - targets: ['mariadb_exporter:9104']  # Nome do serviço MariaDB Exporter no Docker Compose
+      - targets: ['mariadb-exporter:9104']
+
+  # Métricas do próprio Prometheus
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

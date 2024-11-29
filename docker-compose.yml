@@ -13,6 +13,8 @@ services:
       MYSQL_DATABASE: school_db
       MYSQL_USER: flask_user
       MYSQL_PASSWORD: flask_password
+    networks:
+      - monitoring_network
 
   mariadb-exporter:
     image: prom/mysqld-exporter:latest
@@ -23,6 +25,8 @@ services:
       - "9104:9104"
     depends_on:
       - mariadb
+    networks:
+      - monitoring_network
 
   flask_app:
     build:
@@ -40,6 +44,8 @@ services:
       FLASK_DB_USER: flask_user
       FLASK_DB_PASSWORD: flask_password
       FLASK_DB_NAME: school_db
+    networks:
+      - monitoring_network
 
   prometheus:
     image: prom/prometheus:latest
@@ -51,6 +57,8 @@ services:
     depends_on:
       - flask_app
       - mariadb-exporter
+    networks:
+      - monitoring_network
 
   grafana:
     image: grafana/grafana:latest
@@ -59,10 +67,16 @@ services:
       - "3000:3000"
     volumes:
       - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
-
+    networks:
+      - monitoring_network
 
 volumes:
   db_data:
   grafana_data:
+
+networks:
+  monitoring_network:
+    driver: bridge
