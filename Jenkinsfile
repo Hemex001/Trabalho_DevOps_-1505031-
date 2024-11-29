@@ -35,7 +35,7 @@ pipeline {
             steps {
                 echo 'Iniciando containers...'
                 sh '''
-                    docker-compose up -d
+                    docker-compose up -d --no-recreate
                 '''
             }
         }
