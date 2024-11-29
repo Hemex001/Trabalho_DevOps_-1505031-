@@ -22,7 +22,8 @@ pipeline {
         stage('Rodar Testes') {
             steps {
                 sh '''
-                source venv/bin/activate
+                python3 -m venv venv
+                . venv/bin/activate
                 python -m unittest discover -s . -p "test_*.py"
                 '''
             }
