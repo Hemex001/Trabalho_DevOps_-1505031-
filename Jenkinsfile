@@ -26,6 +26,7 @@ pipeline {
             steps {
                 echo 'Subindo o ambiente...'
                 sh '''
+		    docker-compose down || true
                     docker-compose up -d
                 '''
             }
@@ -36,6 +37,7 @@ pipeline {
             echo 'Executando testes da aplicação...'
             sh '''
                 docker-compose up flask-tests --build --abort-on-container-exit
+                docker-compose rm -f flask-tests || true
             '''
         }
     }
