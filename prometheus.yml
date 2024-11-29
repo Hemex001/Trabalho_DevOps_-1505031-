@@ -4,7 +4,7 @@ global:
 scrape_configs:
   - job_name: 'flask_app'
     static_configs:
-      - targets: ['flask_app:5000']  # Alvo para métricas do Flask
+      - targets: ['flask_app_container:5000']  # Alvo para métricas do Flask
 
   - job_name: 'mariadb'
     static_configs:
