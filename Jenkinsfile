@@ -45,8 +45,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh '''
-                echo "Removendo containers existentes..."
-                docker rm -f mariadb_container || true
+                echo "Parando e removendo containers existentes..."
+                docker-compose -f docker-compose.yml down || true
                 echo "Subindo novos containers..."
                 docker-compose -f docker-compose.yml up -d
                 '''
