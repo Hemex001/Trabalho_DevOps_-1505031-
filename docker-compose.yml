@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile_mariadb
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
     environment:
@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile_flask
     ports:
-      - "5001:5000"
+      - "5000:5000"
     depends_on:
       - mariadb
     environment:
@@ -46,9 +46,9 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_prometheus
     image: prom/prometheus:latest
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro # Certifique-se de que o arquivo existe no host
     ports:
-      - "9091:9090"
+      - "9090:9090"
     depends_on:
       - flask_app
     networks:
@@ -58,7 +58,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_grafana
     image: grafana/grafana:latest
     ports:
-      - "3001:3000"
+      - "3000:3000"
     depends_on:
       - prometheus
     networks:
@@ -72,8 +72,8 @@ services:
       context: .
       dockerfile: Dockerfile_jenkins
     ports:
-      - "8081:8080"
-      - "50001:50000"
+      - "8080:8080"
+      - "50000:50000"
     volumes:
       - jenkins_home:/var/jenkins_home
       - /var/run/docker.sock:/var/run/docker.sock
