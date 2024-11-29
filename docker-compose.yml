@@ -43,15 +43,15 @@ services:
     depends_on:
       - flask_app
 
-    grafana:
-      image: grafana/grafana:latest
-      container_name: grafana
-      ports:
-        - "3000:3000"
-      volumes:
-        - ./grafana/provisioning:/etc/grafana/provisioning
-      depends_on:
-        - prometheus
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
 
   mariadb-exporter:
     image: prom/mysqld-exporter:latest
