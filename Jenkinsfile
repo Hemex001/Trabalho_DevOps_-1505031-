@@ -57,13 +57,14 @@ pipeline {
 
         stage('Verificar Monitoramento') {
             steps {
-                // Validando que o Prometheus está rodando corretamente
-                script {
-                    def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:9091", returnStdout: true).trim()
-                    if (response != "200") {
-                        error "Prometheus não está acessível. Código HTTP: ${response}"
-                    }
-                }
+                sh '''
+                echo "Verificando status do Prometheus..."
+                status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9091/-/ready)
+                if [ "$status" -ne 200 ]; then
+                    echo "Prometheus não está acessível. Código HTTP: $status"
+                    exit 1
+                fi
+                '''
             }
         }
     }
