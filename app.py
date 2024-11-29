@@ -1,5 +1,6 @@
-# Código principal do Flask (app.py)
+import os
 import time
+import logging
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_appbuilder import AppBuilder, SQLA
@@ -11,12 +12,18 @@ import logging
 
 app = Flask(__name__)
 
+# Configuração de métricas do Prometheus
 metrics = PrometheusMetrics(app)
+
 # Configuração da chave secreta para sessões
 app.config['SECRET_KEY'] = 'minha_chave_secreta_super_secreta'  # Substitua por uma chave segura
 
-# Configuração do banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root_password@mariadb/school_db'
+# Detectar se está em ambiente de teste
+if os.getenv('FLASK_ENV') == 'testing':
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root_password@mariadb/school_db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Inicializar o banco de dados e o AppBuilder
@@ -27,31 +34,32 @@ appbuilder = AppBuilder(app, db.session)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Tentar conectar até o MariaDB estar pronto
-attempts = 5
-for i in range(attempts):
-    try:
-        with app.app_context():
-            db.create_all()  # Inicializa o banco de dados
-            # Criar um usuário administrador padrão
-            if not appbuilder.sm.find_user(username='admin'):
-                appbuilder.sm.add_user(
-                    username='admin',
-                    first_name='Admin',
-                    last_name='User',
-                    email='admin@admin.com',
-                    role=appbuilder.sm.find_role(appbuilder.sm.auth_role_admin),
-                    password='admin'
-                )
-        logger.info("Banco de dados inicializado com sucesso.")
-        break
-    except OperationalError:
-        if i < attempts - 1:
-            logger.warning("Tentativa de conexão com o banco de dados falhou. Tentando novamente em 5 segundos...")
-            time.sleep(5)  # Aguarda 5 segundos antes de tentar novamente
-        else:
-            logger.error("Não foi possível conectar ao banco de dados após várias tentativas.")
-            raise
+if os.getenv('FLASK_ENV') != 'testing':
+    # Tentar conectar até o MariaDB estar pronto
+    attempts = 5
+    for i in range(attempts):
+        try:
+            with app.app_context():
+                db.create_all()  # Inicializa o banco de dados
+                # Criar um usuário administrador padrão
+                if not appbuilder.sm.find_user(username='admin'):
+                    appbuilder.sm.add_user(
+                        username='admin',
+                        first_name='Admin',
+                        last_name='User',
+                        email='admin@admin.com',
+                        role=appbuilder.sm.find_role(appbuilder.sm.auth_role_admin),
+                        password='admin'
+                    )
+            logger.info("Banco de dados inicializado com sucesso.")
+            break
+        except OperationalError:
+            if i < attempts - 1:
+                logger.warning("Tentativa de conexão com o banco de dados falhou. Tentando novamente em 5 segundos...")
+                time.sleep(5)  # Aguarda 5 segundos antes de tentar novamente
+            else:
+                logger.error("Não foi possível conectar ao banco de dados após várias tentativas.")
+                raise
 
 # Modelo de Aluno - Definição da tabela 'Aluno' no banco de dados
 class Aluno(db.Model):
