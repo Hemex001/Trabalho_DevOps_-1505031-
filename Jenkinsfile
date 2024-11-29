@@ -59,7 +59,7 @@ pipeline {
             steps {
                 // Validando que o Prometheus está rodando corretamente
                 script {
-                    def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:9090", returnStdout: true).trim()
+                    def response = sh(script: "curl -s -o /dev/null -w '%{http_code}' http://localhost:9091", returnStdout: true).trim()
                     if (response != "200") {
                         error "Prometheus não está acessível. Código HTTP: ${response}"
                     }
