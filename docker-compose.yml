@@ -43,7 +43,6 @@ services:
     depends_on:
       - flask_app
 
-  services:
     grafana:
       image: grafana/grafana:latest
       container_name: grafana
