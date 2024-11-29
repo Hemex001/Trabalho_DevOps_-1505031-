@@ -70,6 +70,18 @@ services:
     networks:
       - app-network
 
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins_container
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    restart: unless-stopped
+    networks:
+      - app-network
+      
 volumes:
   db_data:
   grafana_data:
