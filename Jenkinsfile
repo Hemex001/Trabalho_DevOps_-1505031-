@@ -12,14 +12,6 @@ pipeline {
                 checkout scm
             }
         }
-
-        stage('Setup Environment') {
-        steps {
-            sh '''
-               source venv/bin/activate
-               pip install -r requirements.txt
-               '''
-    	    }
 	}
 
 	
