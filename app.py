@@ -14,7 +14,6 @@ app = Flask(__name__)
 
 # Configurar o Prometheus Metrics
 metrics = PrometheusMetrics(app)
-metrics.info("app_info", "Informações sobre o Flask App", version="1.0.0")
 
 # Configuração do Flask
 app.config['SECRET_KEY'] = 'minha_chave_secreta_super_secreta'
@@ -92,10 +91,6 @@ def adicionar_aluno():
     logger.info(f"Aluno {data['nome']} {data['ra']} adicionado com sucesso!")
     return jsonify({'message': 'Aluno adicionado com sucesso!'}), 201
 
-# Rota inicial
-@app.route("/")
-def index():
-    return "Aplicação Flask rodando com métricas no endpoint /metrics"
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000, debug=True)
