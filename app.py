@@ -1,16 +1,19 @@
-from flask import Flask, Response, jsonify, request
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_appbuilder import AppBuilder, SQLA
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder import ModelView
-from prometheus_client import generate_latest, CollectorRegistry, multiprocess
-from prometheus_client import Counter, Histogram
+from prometheus_flask_exporter import PrometheusMetrics
 import os
 import time
 import logging
 
 # Inicializar o Flask
 app = Flask(__name__)
+
+# Configurar Prometheus Metrics
+metrics = PrometheusMetrics(app)
+metrics.info("app_info", "Aplicação Flask para monitoramento", version="1.0.0")
 
 # Configuração do Flask
 app.config['SECRET_KEY'] = 'minha_chave_secreta_super_secreta'
@@ -20,38 +23,13 @@ if os.getenv('FLASK_ENV') == 'testing':
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root_password@mariadb/school_db'
 
-# Inicializar banco de dados e AppBuilder
+# Inicializar o banco de dados e AppBuilder
 db = SQLAlchemy(app)
 appbuilder = AppBuilder(app, db.session)
 
-# Configuração do Monitoramento Prometheus
-registry = CollectorRegistry()
-multiprocess.MultiProcessCollector(registry)
-
-# Métricas customizadas
-REQUEST_COUNT = Counter(
-    "flask_app_requests_total", "Total de requisições recebidas", ["method", "endpoint"]
-)
-REQUEST_LATENCY = Histogram(
-    "flask_app_request_latency_seconds", "Latência das requisições", ["method", "endpoint"]
-)
-
-# Middleware para medir métricas
-@app.before_request
-def before_request():
-    request.start_time = time.time()
-
-@app.after_request
-def after_request(response):
-    REQUEST_COUNT.labels(request.method, request.path).inc()
-    latency = time.time() - request.start_time
-    REQUEST_LATENCY.labels(request.method, request.path).observe(latency)
-    return response
-
-# Endpoint `/metrics`
-@app.route('/metrics')
-def metrics():
-    return Response(generate_latest(registry), mimetype="text/plain")
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Modelo Aluno
 class Aluno(db.Model):
@@ -84,6 +62,7 @@ def adicionar_aluno():
     novo_aluno = Aluno(nome=data['nome'], ra=data['ra'])
     db.session.add(novo_aluno)
     db.session.commit()
+    logger.info(f"Aluno {data['nome']} {data['ra']} adicionado com sucesso!")
     return jsonify({'message': 'Aluno adicionado com sucesso!'}), 201
 
 # Rota inicial
