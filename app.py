@@ -80,10 +80,6 @@ appbuilder.add_view(
     category="Alunos",
 )
 
-@app.route('/metrics')
-def metrics_endpoint():
-    return metrics.do_export()
-
 # Rota para listar todos os alunos - Método GET
 @app.route('/alunos', methods=['GET'])
 def listar_alunos():
