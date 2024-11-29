@@ -9,13 +9,6 @@ pipeline {
             }
         }
 
-        stage('Instalação de Dependências') {
-            steps {
-                // Instalando as dependências do Python
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
         stage('Rodar Testes') {
             steps {
                 // Rodando os testes com unittest
@@ -52,14 +45,13 @@ pipeline {
 
     post {
         always {
-            // Limpando containers após execução (opcional)
-            sh 'docker-compose -f docker-compose.yml down || true'
+            echo 'Pipeline finalizado.'
         }
         success {
-            echo 'Pipeline executada com sucesso!'
+            echo 'Pipeline concluído com sucesso!'
         }
         failure {
-            echo 'Falha na pipeline. Verifique os logs.'
+            echo 'Pipeline falhou. Verifique os logs.'
         }
     }
 }
