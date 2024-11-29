@@ -13,15 +13,15 @@ pipeline {
             }
         }
 
-        stage('Rodar Testes') {
-            steps {
-                echo 'Executando testes da aplicação...'
-                sh '''
-                    docker-compose down
-                    docker-compose up flask-tests --build --abort-on-container-exit
-                '''
-            }
+    stage('Rodar Testes') {
+        steps {
+            echo 'Executando testes da aplicação...'
+            sh '''
+                docker-compose down || true
+                docker-compose up flask-tests --build --abort-on-container-exit
+            '''
         }
+    }
 
         stage('Build Imagens Docker') {
             steps {
