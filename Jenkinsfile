@@ -9,6 +9,12 @@ pipeline {
             }
         }
 
+        stage('Instalar Dependências') {
+            steps {
+                sh 'pip3 install -r requirements.txt'
+            }
+        }
+
         stage('Rodar Testes') {
             steps {
                 // Rodando os testes com unittest
