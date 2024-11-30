@@ -45,6 +45,11 @@ appbuilder.add_view(
     category="Alunos"
 )
 
+# Criar tabelas antes do primeiro request
+@app.before_first_request
+def create_tables():
+    db.create_all()
+
 # Rotas para Alunos
 @app.route('/alunos', methods=['GET'])
 def listar_alunos():
