@@ -18,6 +18,7 @@ if os.getenv('FLASK_ENV') == 'testing':
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root_password@mariadb/school_db'
+    os.environ["DEBUG_METRICS"] = "1"
 
 # Inicializar o banco de dados e AppBuilder
 db = SQLAlchemy(app)
