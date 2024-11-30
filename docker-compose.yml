@@ -26,13 +26,13 @@ services:
     depends_on:
       - mariadb
     environment:
-    - DEBUG_METRICS=1
       FLASK_APP: app
       FLASK_ENV: development
       FLASK_DB_HOST: mariadb
       FLASK_DB_USER: flask_user
       FLASK_DB_PASSWORD: flask_password
       FLASK_DB_NAME: school_db
+      DEBUG_METRICS: "1"  # Habilitar métricas mesmo no modo desenvolvimento
     networks:
       - monitoring_net
 
@@ -44,6 +44,7 @@ services:
     ports:
       - "9090:9090"
     depends_on:
+      - flask  # Adiciona dependência do Flask
       - mysqld_exporter
     networks:
       - monitoring_net
