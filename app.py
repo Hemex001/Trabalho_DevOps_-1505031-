@@ -5,7 +5,6 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder import ModelView
 from prometheus_flask_exporter import PrometheusMetrics
 import os
-import time
 import logging
 
 # Inicializar o Flask
