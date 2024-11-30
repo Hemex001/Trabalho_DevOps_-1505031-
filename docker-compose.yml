@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   mariadb:
     build:
@@ -13,11 +15,14 @@ services:
       MYSQL_DATABASE: school_db
       MYSQL_USER: flask_user
       MYSQL_PASSWORD: flask_password
+    networks:
+      - monitoring_net
 
   flask:
     build:
       context: .
       dockerfile: Dockerfile_flask
+    container_name: flask
     ports:
       - "5000:5000"
     depends_on:
@@ -29,6 +34,8 @@ services:
       FLASK_DB_USER: flask_user
       FLASK_DB_PASSWORD: flask_password
       FLASK_DB_NAME: school_db
+    networks:
+      - monitoring_net
 
   prometheus:
     image: prom/prometheus:latest
@@ -39,16 +46,20 @@ services:
       - "9090:9090"
     depends_on:
       - mysqld_exporter
-
+    networks:
+      - monitoring_net
 
   mysqld_exporter:
-    image: prom/mysqld-exporter
+    image: prom/mysqld-exporter:latest
+    container_name: mysqld_exporter
     ports:
       - "9104:9104"
     environment:
       DATA_SOURCE_NAME: "root:root_password@(mariadb:3306)/"
     depends_on:
       - mariadb
+    networks:
+      - monitoring_net
 
   grafana:
     image: grafana/grafana:latest
@@ -60,7 +71,12 @@ services:
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
+    networks:
+      - monitoring_net
 
 volumes:
   db_data:
   grafana_data:
+
+networks:
+  monitoring_net:
