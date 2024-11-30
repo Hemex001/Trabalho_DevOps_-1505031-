@@ -9,7 +9,8 @@ import logging
 
 # Inicializar o Flask
 app = Flask(__name__)
-metrics = PrometheusMetrics(app)  # Exponha métricas no endpoint /metrics
+metrics = PrometheusMetrics(app, path='/metrics')
+
 # static information as metric
 metrics.info('app_info', 'Application info', version='1.0.3')
 
