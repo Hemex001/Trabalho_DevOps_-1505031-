@@ -3,13 +3,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_appbuilder import AppBuilder, SQLA
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder import ModelView
-from prometheus_client.exposition import core
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, Counter
+from prometheus_flask_exporter import PrometheusMetrics
 import os
 import logging
 
 # Inicializar o Flask
 app = Flask(__name__)
+metrics = PrometheusMetrics(app)  # Exponha métricas no endpoint /metrics
 
 # Configuração do Flask
 app.config['SECRET_KEY'] = 'minha_chave_secreta_super_secreta'
@@ -45,19 +45,9 @@ appbuilder.add_view(
     category="Alunos"
 )
 
-# Rota manual para métricas
-@app.route('/metrics', methods=['GET'])
+@app.route('/metrics')
 def custom_metrics():
-    # Cria um registro para métricas personalizadas
-    registry = CollectorRegistry()
-
-    # Adiciona uma métrica personalizada de exemplo
-    c = Counter('my_custom_metric', 'Description of counter', registry=registry)
-    c.inc()  # Incrementa o contador
-
-    # Retorna as métricas geradas
-    return generate_latest(registry), 200, {'Content-Type': CONTENT_TYPE_LATEST}
-
+    return metrics.do_expose_metrics()
 
 # Rotas para Alunos
 @app.route('/alunos', methods=['GET'])
