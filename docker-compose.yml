@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mariadb:
     build:
@@ -54,8 +52,9 @@ services:
     container_name: mysqld_exporter
     ports:
       - "9104:9104"
-    environment:
-      DATA_SOURCE_NAME: "root:root_password@(mariadb:3306)/"
+    volumes:
+      - ./my.cnf:/etc/.my.cnf
+    command: --config.my-cnf=/etc/.my.cnf
     depends_on:
       - mariadb
     networks:
