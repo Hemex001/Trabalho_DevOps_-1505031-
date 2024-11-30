@@ -1,73 +1,76 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE_FLASK = "flask_app_image"
+        DOCKER_IMAGE_MARIADB = "mariadb_image"
+    }
+
     stages {
         stage('Clone do Repositório') {
             steps {
-                // Clonando o repositório do Git
+                echo 'Clonando o repositório do Git...'
                 checkout scm
             }
         }
 
         stage('Rodar Testes') {
             steps {
+                echo 'Executando testes unitários...'
                 sh '''
-                echo "Criando ambiente virtual..."
                 python3 -m venv venv
-                echo "Ativando ambiente virtual..."
                 . venv/bin/activate
-                echo "Instalando dependências..."
                 pip install -r requirements.txt
-                echo "Executando testes..."
                 FLASK_ENV=testing python -m unittest discover -s . -p "test_*.py"
-                echo "Testes concluídos!"
                 '''
             }
         }
 
         stage('Build de Imagens Docker') {
             steps {
-                // Build das imagens Docker
-                sh 'docker-compose -f docker-compose.yml build'
+                echo 'Criando imagens Docker...'
+                sh '''
+                docker-compose down || true
+                docker-compose build
+                '''
             }
         }
 
         stage('Deploy') {
             steps {
+                echo 'Fazendo deploy da aplicação...'
                 sh '''
-                echo "Parando e removendo containers existentes..."
-                docker-compose -f docker-compose.yml down || true
-                echo "Removendo containers conflitantes..."
-                docker rm -f flask mariadb || true
-                echo "Subindo novos containers..."
-                docker-compose -f docker-compose.yml up -d
+                docker-compose down || true
+                docker-compose up -d
                 '''
             }
         }
 
         stage('Verificar Monitoramento') {
             steps {
+                echo 'Verificando o status do monitoramento...'
                 sh '''
-                echo "Verificando status do Prometheus..."
+                echo "Verificando Prometheus..."
                 status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9090/-/ready)
                 if [ "$status" -ne 200 ]; then
                     echo "Prometheus não está acessível. Código HTTP: $status"
                     exit 1
                 fi
                 '''
+                echo 'Prometheus está funcionando corretamente.'
             }
         }
     }
 
     post {
         always {
-            echo 'Pipeline finalizado.'
+            echo 'Pipeline concluído. Verifique os resultados nos logs acima.'
         }
         success {
-            echo 'Pipeline concluído com sucesso!'
+            echo 'Pipeline executado com sucesso! Aplicação e monitoramento estão operacionais.'
         }
         failure {
-            echo 'Pipeline falhou. Verifique os logs.'
+            echo 'Pipeline falhou. Verifique os erros nos logs.'
         }
     }
 }
