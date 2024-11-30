@@ -9,16 +9,6 @@ pipeline {
             }
         }
 
-        stage('Configurar Ambiente Virtual') {
-            steps {
-                sh '''
-                python3 -m venv venv
-                . venv/bin/activate
-                pip install -r requirements.txt
-                '''
-            }
-        }
-
         stage('Rodar Testes') {
             steps {
                 sh '''

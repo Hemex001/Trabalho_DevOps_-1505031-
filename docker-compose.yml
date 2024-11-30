@@ -16,17 +16,14 @@ services:
     networks:
       - monitoring_network
 
-  mariadb-exporter:
-    image: prom/mysqld-exporter:latest
-    container_name: mariadb_exporter
-    environment:
-      - DATA_SOURCE_NAME=root:root_password@(mariadb:3306)/school_db
+  mysqld_exporter:
+    image: prom/mysqld-exporter
     ports:
       - "9104:9104"
+    environment:
+      DATA_SOURCE_NAME: "root:root_password@(mariadb:3306)/"
     depends_on:
       - mariadb
-    networks:
-      - monitoring_network
 
   flask_app:
     build:
