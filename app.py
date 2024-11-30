@@ -1,25 +1,79 @@
-from flask import Flask
-from prometheus_flask_exporter import PrometheusMetrics
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_appbuilder import AppBuilder, SQLA
+from flask_appbuilder.models.sqla.interface import SQLAInterface
+from flask_appbuilder import ModelView
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
+from prometheus_client.exposition import core
+from prometheus_client import Counter
+import os
+import logging
 
+# Inicializar o Flask
 app = Flask(__name__)
 
-# Inicializa métricas e loga uma mensagem para confirmar
-try:
-    metrics = PrometheusMetrics(app)
-    print("PrometheusMetrics initialized successfully.")
-except Exception as e:
-    print(f"Error initializing PrometheusMetrics: {e}")
+# Configuração do Flask
+app.config['SECRET_KEY'] = 'minha_chave_secreta_super_secreta'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+if os.getenv('FLASK_ENV') == 'testing':
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+else:
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root_password@mariadb/school_db'
 
-@app.route('/')
-def index():
-    return "Hello, Prometheus!"
+# Inicializar o banco de dados e AppBuilder
+db = SQLAlchemy(app)
+appbuilder = AppBuilder(app, db.session)
 
-@app.route('/routes')
-def list_routes():
-    routes = []
-    for rule in app.url_map.iter_rules():
-        routes.append(f"{rule.endpoint}: {rule}")
-    return {"routes": routes}
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Modelo Aluno
+class Aluno(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(50), nullable=False)
+    ra = db.Column(db.String(50), nullable=False)
+
+# Configurar views do AppBuilder
+class AlunoModelView(ModelView):
+    datamodel = SQLAInterface(Aluno)
+    list_columns = ['id', 'nome', 'ra']
+
+appbuilder.add_view(
+    AlunoModelView,
+    "Lista de Alunos",
+    icon="fa-folder-open-o",
+    category="Alunos"
+)
+
+# Rota manual para métricas
+@app.route('/metrics', methods=['GET'])
+def custom_metrics():
+    # Cria um registro para métricas personalizadas
+    registry = CollectorRegistry()
+
+    # Adiciona uma métrica personalizada de exemplo
+    c = Counter('my_custom_metric', 'Description of counter', registry=registry)
+    c.inc()  # Incrementa o contador
+
+    # Retorna as métricas geradas
+    return generate_latest(registry), 200, {'Content-Type': CONTENT_TYPE_LATEST}
+
+# Rotas para Alunos
+@app.route('/alunos', methods=['GET'])
+def listar_alunos():
+    alunos = Aluno.query.all()
+    output = [{'id': aluno.id, 'nome': aluno.nome, 'ra': aluno.ra} for aluno in alunos]
+    return jsonify(output)
+
+@app.route('/alunos', methods=['POST'])
+def adicionar_aluno():
+    data = request.get_json()
+    novo_aluno = Aluno(nome=data['nome'], ra=data['ra'])
+    db.session.add(novo_aluno)
+    db.session.commit()
+    logger.info(f"Aluno {data['nome']} {data['ra']} adicionado com sucesso!")
+    return jsonify({'message': 'Aluno adicionado com sucesso!'}), 201
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
