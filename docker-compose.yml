@@ -53,7 +53,7 @@ services:
       - "9090:9090"
     depends_on:
       - flask_app
-      - mariadb-exporter
+      - mysqld_exporter
     networks:
       - monitoring_network
 
