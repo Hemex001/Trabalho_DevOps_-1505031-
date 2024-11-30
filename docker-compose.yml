@@ -46,7 +46,7 @@ services:
     ports:
       - "9104:9104"
     environment:
-      DATA_SOURCE_NAME: "user:password@(mariadb:3306)/"
+      DATA_SOURCE_NAME: "root:root_password@(mariadb:3306)/"
     depends_on:
       - mariadb
 
