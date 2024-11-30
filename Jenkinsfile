@@ -38,7 +38,7 @@ pipeline {
                 echo "Parando e removendo containers existentes..."
                 docker-compose -f docker-compose.yml down || true
                 echo "Removendo containers conflitantes..."
-                docker rm -f flask_app_container mariadb_container || true
+                docker rm -f flask mariadb || true
                 echo "Subindo novos containers..."
                 docker-compose -f docker-compose.yml up -d
                 '''
