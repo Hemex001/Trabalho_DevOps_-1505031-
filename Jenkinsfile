@@ -59,7 +59,7 @@ pipeline {
             steps {
                 sh '''
                 echo "Verificando status do Prometheus..."
-                status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9091/-/ready)
+                status=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9090/-/ready)
                 if [ "$status" -ne 200 ]; then
                     echo "Prometheus não está acessível. Código HTTP: $status"
                     exit 1
