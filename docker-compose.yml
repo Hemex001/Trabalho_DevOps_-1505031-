@@ -13,23 +13,11 @@ services:
       MYSQL_DATABASE: school_db
       MYSQL_USER: flask_user
       MYSQL_PASSWORD: flask_password
-    networks:
-      - monitoring_network
 
-  mysqld_exporter:
-    image: prom/mysqld-exporter
-    ports:
-      - "9104:9104"
-    environment:
-      DATA_SOURCE_NAME: "root:root_password@(mariadb:3306)/"
-    depends_on:
-      - mariadb
-
-  flask_app:
+  flask:
     build:
       context: .
       dockerfile: Dockerfile_flask
-    container_name: flask_app
     ports:
       - "5000:5000"
     depends_on:
@@ -41,8 +29,6 @@ services:
       FLASK_DB_USER: flask_user
       FLASK_DB_PASSWORD: flask_password
       FLASK_DB_NAME: school_db
-    networks:
-      - monitoring_network
 
   prometheus:
     image: prom/prometheus:latest
@@ -52,10 +38,17 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - flask_app
       - mysqld_exporter
-    networks:
-      - monitoring_network
+
+
+  mysqld_exporter:
+    image: prom/mysqld-exporter
+    ports:
+      - "9104:9104"
+    environment:
+      DATA_SOURCE_NAME: "user:password@(mariadb:3306)/"
+    depends_on:
+      - mariadb
 
   grafana:
     image: grafana/grafana:latest
@@ -67,13 +60,7 @@ services:
       - grafana_data:/var/lib/grafana
     depends_on:
       - prometheus
-    networks:
-      - monitoring_network
 
 volumes:
   db_data:
   grafana_data:
-
-networks:
-  monitoring_network:
-    driver: bridge
