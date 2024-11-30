@@ -3,9 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_appbuilder import AppBuilder, SQLA
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder import ModelView
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry
 from prometheus_client.exposition import core
-from prometheus_client import Counter
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, Counter
 import os
 import logging
 
@@ -58,6 +57,7 @@ def custom_metrics():
 
     # Retorna as métricas geradas
     return generate_latest(registry), 200, {'Content-Type': CONTENT_TYPE_LATEST}
+
 
 # Rotas para Alunos
 @app.route('/alunos', methods=['GET'])
