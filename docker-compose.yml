@@ -26,6 +26,7 @@ services:
     depends_on:
       - mariadb
     environment:
+    - DEBUG_METRICS=1
       FLASK_APP: app
       FLASK_ENV: development
       FLASK_DB_HOST: mariadb
