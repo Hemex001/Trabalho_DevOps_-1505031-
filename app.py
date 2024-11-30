@@ -47,10 +47,6 @@ appbuilder.add_view(
     category="Alunos"
 )
 
-@app.route('/metrics')
-def custom_metrics():
-    return metrics.do_expose_metrics()
-
 # Rotas para Alunos
 @app.route('/alunos', methods=['GET'])
 def listar_alunos():
