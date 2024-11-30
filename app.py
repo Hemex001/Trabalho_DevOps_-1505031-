@@ -2,7 +2,13 @@ from flask import Flask
 from prometheus_flask_exporter import PrometheusMetrics
 
 app = Flask(__name__)
-metrics = PrometheusMetrics(app)
+
+# Inicializa métricas e loga uma mensagem para confirmar
+try:
+    metrics = PrometheusMetrics(app)
+    print("PrometheusMetrics initialized successfully.")
+except Exception as e:
+    print(f"Error initializing PrometheusMetrics: {e}")
 
 @app.route('/')
 def index():
